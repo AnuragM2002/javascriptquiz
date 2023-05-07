@@ -1,7 +1,9 @@
 var startButton = $('#start');
+var scoreButton = $('#score');
+var submitButton = $('<button></button>').text('Submit Score');
 var j = 0;
 var score = 0;
-var timeLeft = 10;
+var timeLeft = 30;
 var question = '';
 var answersOne = ['<script src="xxx.js">', '<script name="xxx.js">', '<script href="xxx.js">', '<script="xxx.js">']
 var answersTwo = ['if i == 5 then', 'if(i == 5)', 'if i = 5', 'if i = 5 then']
@@ -21,45 +23,95 @@ function questions() {
     for(let i = 0; i < 4; i++) {
         question.append($('<p></p>').text(answerList[j][i]));
     }
-    question.css('color', 'white')
     question.children().on('click', (e) => {
         if(e.target.textContent === correctAnswers[j]) {
-            //console.log(correctAnswers[j], e.target.textContent)
             score++
         } else {
-
+            timeLeft = timeLeft - 5;
         }
         j++;
         question.hide();
         if(j < questionList.length) {
             questions();
-        } else {
-            console.log(score)
-        }
+        } 
     })
     $('body').append(question);
 }
 
 function playGame() {
     $('#startPage').hide();
-    var timer = $('<p></p>').text(`${timeLeft} seconds left`);
+    var timer = $('<p></p>').text(`${timeLeft} seconds remaining`);
     $('body').append(timer);
+    $(submitButton).on('click', function () {
+        var currentdate = new Date();
+        var datetime = currentdate.getDate() + "/"
+            + (currentdate.getMonth() + 1) + "/"
+            + currentdate.getFullYear() + " @ "
+            + currentdate.getHours() + ":"
+            + currentdate.getMinutes() + ":"
+            + currentdate.getSeconds();
+        var savedScores = [localStorage.getItem("scores")];
+        var savedDates = [localStorage.getItem("dates")]
+        savedDates.push(datetime);
+        savedScores.push(score);
+        localStorage.setItem("scores", savedScores);
+        localStorage.setItem("dates", savedDates);
+        location.reload();
+    })
     var x = window.setInterval(function() {
         timeLeft--;
-        timer = timer.text(`${timeLeft} seconds left`);
-        console.log(timeLeft)
-        if (timeLeft === 0) {
+        timer = timer.text(`${timeLeft} seconds remaining`);
+        if (j >= questionList.length) {
+            window.clearInterval(x);
+            var endMessage = $('<p></p>').text(`You scored ${score} out of 5!`);
+            $('body').append(endMessage);
+            endMessage.append(submitButton);
+        }
+        if (timeLeft <= 0) {
             question.hide();
             timer.hide();
-            var endMessage = $('<p></p>').text('Ran out of time');
+            var timeEnd = $('<p></p>').text('Ran out of time');
+            var endMessage = $('<p></p>').text(`You scored ${score} out of 5!`);
+            $('body').append(timeEnd);
             $('body').append(endMessage);
+            endMessage.append(submitButton);
             window.clearInterval(x);
         }
     }, 1000);
     questions();
 }
 
+function showScores() {
+    $('#startPage').hide();
+    var scoreArray = localStorage.getItem("scores").split('').filter(Number);
+    var date = localStorage.getItem("dates").split(',');
+    console.log(date);
+    var scoreTable = $('<h1></h1>').text('Past Scores');
+    var back = $('<button></button>').text('Back');
+    $(back).on('click', function() {
+        scoreTable.hide();
+        back.hide();
+        $('#startPage').show();
+    })
+    $('body').append(scoreTable);
+    $('body').append(back);
+    for (let i = 0; i < scoreArray.length; i++) {
+        scoreTable.append($('<p></p>)').text(`${scoreArray[i]}/5, ${date[i+1]}`));
+    }
+    scoreTable.children().on('click', (e) => {
+        e.target.textContent == '';
+    })
+}
+
 $(startButton).on("click", function () {
     playGame();
 });
+
+$(scoreButton).on("click", function () {
+    showScores();
+})
+
+
+
+
 
