@@ -5,6 +5,8 @@ var j = 0;
 var score = 0;
 var timeLeft = 30;
 var question = '';
+
+// All the questions and answers are written in arrays so that they can be easily manipulated with the functions.
 var answersOne = ['<script src="xxx.js">', '<script name="xxx.js">', '<script href="xxx.js">', '<script="xxx.js">']
 var answersTwo = ['if i == 5 then', 'if(i == 5)', 'if i = 5', 'if i = 5 then']
 var answersThree = ['if i <> 5', 'if(i <> 5)', 'if i =! 5 then', 'if(i != 5)']
@@ -18,6 +20,7 @@ var questionList = ['What is the correct syntax for referring to an external scr
 'How does a FOR loop start?',
 'What is the correct way to write a JavaScript array?']
 
+// Makes the questions and answers visible based on the arrays above.
 function questions() {
     question = $('<h1></h1>').text(questionList[j]);
     for(let i = 0; i < 4; i++) {
@@ -38,6 +41,7 @@ function questions() {
     $('body').append(question);
 }
 
+// Saves information, creates the timer and gets the date and time of each completed quiz.
 function playGame() {
     $('#startPage').hide();
     var timer = $('<p></p>').text(`${timeLeft} seconds remaining`);
@@ -81,37 +85,46 @@ function playGame() {
     questions();
 }
 
+// Shows a list of past scores with the date and time. Stores data using local storage.
 function showScores() {
     $('#startPage').hide();
     var scoreArray = localStorage.getItem("scores").split('').filter(Number);
     var date = localStorage.getItem("dates").split(',');
-    console.log(date);
+    if (date.length > scoreArray.length) {
+        date.shift();
+    }
     var scoreTable = $('<h1></h1>').text('Past Scores');
-    var back = $('<button></button>').text('Back');
+    var back = $('<button></button>').text('Save and quit');
     $(back).on('click', function() {
         scoreTable.hide();
         back.hide();
+        var newArr = scoreArray.filter(Number);
+        var newArr2 = date.filter(e => !e.includes('x'));
+        localStorage.setItem("scores", newArr);
+        localStorage.setItem("dates", newArr2);
         $('#startPage').show();
     })
     $('body').append(scoreTable);
     $('body').append(back);
     for (let i = 0; i < scoreArray.length; i++) {
-        scoreTable.append($('<p></p>)').text(`${scoreArray[i]}/5, ${date[i+1]}`));
+        scoreTable.append($('<p></p>)').text(`${scoreArray[i]}/5, ${date[i]}`).attr("id", i));
     }
-    scoreTable.children().on('click', (e) => {
-        e.target.textContent == '';
-    })
+    scoreTable.children().on('click', function(e) {
+        let test = e.target;
+        let i = test.getAttribute("id");
+        test.remove();
+        scoreArray.splice(i, 1, 'x');
+        date.splice(i, 1, 'x');
+    });
 }
 
+// Starts the quiz
 $(startButton).on("click", function () {
     playGame();
 });
 
+// Shows the scores
 $(scoreButton).on("click", function () {
     showScores();
 })
-
-
-
-
 
